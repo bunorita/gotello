@@ -1,14 +1,18 @@
 package main
 
 import (
-	"time"
+	"log"
 
-	"github.com/bunorita/gotello/app/models"
+	"github.com/bunorita/gotello/config"
+	"github.com/bunorita/gotrading/utils"
 )
 
 func main() {
-	droneManager := models.NewDroneManager()
-	droneManager.TakeOff()
-	time.Sleep(10 * time.Second)
-	droneManager.Land()
+	utils.LoggingSettings(config.Config.LogFile)
+	log.Println("test")
+
+	// droneManager := models.NewDroneManager()
+	// droneManager.TakeOff()
+	// time.Sleep(10 * time.Second)
+	// droneManager.Land()
 }
