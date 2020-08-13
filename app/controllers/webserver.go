@@ -20,6 +20,8 @@ func viewIndexHandler(w http.ResponseWriter, r *http.Request) {
 
 func StartWebServer() error {
 	http.HandleFunc("/", viewIndexHandler)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
 	return http.ListenAndServe(
 		fmt.Sprintf("%s:%d", config.Config.Address, config.Config.Port),
 		nil,
