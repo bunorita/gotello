@@ -8,8 +8,12 @@ import (
 	"github.com/bunorita/gotello/config"
 )
 
+func getTemplate(temp string) (*template.Template, error) {
+	return template.ParseFiles("app/views/layout.html", temp)
+}
+
 func viewIndexHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("app/views/index.html")
+	t, err := getTemplate("app/views/index.html")
 	if err == nil {
 		err = t.Execute(w, nil)
 	}
