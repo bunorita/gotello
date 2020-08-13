@@ -9,7 +9,14 @@
 </style>
 <script>
     function sendCommand(command, params = {}) {
-        // TODO
+        params["command"] = command;
+        $.post("/api/command/", params)
+            .done(function (json) {
+                console.log({ action: "sendCommand", params: params, json: json, status: "success" });
+            })
+            .fail(function (json) {
+                console.log({ action: "sendCommand", params: params, json: json, status: "fail" });
+            });
     }
 </script>
 
