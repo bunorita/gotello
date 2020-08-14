@@ -87,6 +87,25 @@ func apiCommandHandler(w http.ResponseWriter, r *http.Request) {
 		drone.Land()
 	case "hover":
 		drone.Hover()
+	case "up":
+		drone.Up(drone.Speed)
+	case "down":
+		drone.Down(drone.Speed)
+	case "clockwise":
+		drone.Clockwise(drone.Speed)
+	case "counterClockwise":
+		drone.CounterClockwise(drone.Speed)
+	case "forward":
+		drone.Forward(drone.Speed)
+	case "backward":
+		drone.Backward(drone.Speed)
+	case "right":
+		drone.Right(drone.Speed)
+	case "left":
+		drone.Left(drone.Speed)
+	default:
+		APIResponse(w, "Not found", http.StatusNotFound)
+		return
 	}
 	APIResponse(w, "OK", http.StatusOK)
 }
