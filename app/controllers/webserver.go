@@ -8,8 +8,17 @@ import (
 	"regexp"
 	"text/template"
 
+	"github.com/bunorita/gotello/app/models"
 	"github.com/bunorita/gotello/config"
 )
+
+var appContext struct {
+	DroneManager *models.DroneManager
+}
+
+func init() {
+	appContext.DroneManager = models.NewDroneManager()
+}
 
 func getTemplate(temp string) (*template.Template, error) {
 	return template.ParseFiles("app/views/layout.html", temp)
@@ -68,6 +77,17 @@ func apiMakeHandler(fn func(w http.ResponseWriter, r *http.Request)) http.Handle
 func apiCommandHandler(w http.ResponseWriter, r *http.Request) {
 	command := r.FormValue("command")
 	log.Printf("action=apiCommandHandler command=%s", command)
+	drone := appContext.DroneManager
+	switch command {
+	case "ceaseRotation":
+		drone.CeaseRotation()
+	case "takeOff":
+		drone.TakeOff()
+	case "land":
+		drone.Land()
+	case "hover":
+		drone.Hover()
+	}
 	APIResponse(w, "OK", http.StatusOK)
 }
 
