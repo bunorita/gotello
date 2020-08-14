@@ -130,6 +130,10 @@ func apiCommandHandler(w http.ResponseWriter, r *http.Request) {
 		drone.ThrowTakeOff()
 	case "bounce":
 		drone.Bounce()
+	case "patrol":
+		drone.StartPatrol()
+	case "stopPatrol":
+		drone.StopPatrol()
 	default:
 		APIResponse(w, "Not found", http.StatusNotFound)
 		return

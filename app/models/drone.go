@@ -87,3 +87,15 @@ func (d *DroneManager) Patrol() {
 		}
 	}()
 }
+
+func (d *DroneManager) StartPatrol() {
+	if !d.isPatrolling {
+		d.Patrol()
+	}
+}
+
+func (d *DroneManager) StopPatrol() {
+	if d.isPatrolling {
+		d.Patrol()
+	}
+}
