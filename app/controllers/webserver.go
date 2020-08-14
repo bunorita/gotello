@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"text/template"
 
 	"github.com/bunorita/gotello/app/models"
@@ -74,6 +75,18 @@ func apiMakeHandler(fn func(w http.ResponseWriter, r *http.Request)) http.Handle
 	}
 }
 
+func getSpeed(r *http.Request) int {
+	strSpeed := r.FormValue("speed")
+	if strSpeed == "" {
+		return models.DefaultSpeed
+	}
+	speed, err := strconv.Atoi(strSpeed)
+	if err != nil {
+		return models.DefaultSpeed
+	}
+	return speed
+}
+
 func apiCommandHandler(w http.ResponseWriter, r *http.Request) {
 	command := r.FormValue("command")
 	log.Printf("action=apiCommandHandler command=%s", command)
@@ -103,6 +116,20 @@ func apiCommandHandler(w http.ResponseWriter, r *http.Request) {
 		drone.Right(drone.Speed)
 	case "left":
 		drone.Left(drone.Speed)
+	case "speed":
+		drone.Speed = getSpeed(r)
+	case "frontFlip":
+		drone.FrontFlip()
+	case "backFlip":
+		drone.BackFlip()
+	case "rightFlip":
+		drone.RightFlip()
+	case "leftFlip":
+		drone.LeftFlip()
+	case "throwTakeOff":
+		drone.ThrowTakeOff()
+	case "bounce":
+		drone.Bounce()
 	default:
 		APIResponse(w, "Not found", http.StatusNotFound)
 		return
