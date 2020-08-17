@@ -145,6 +145,7 @@ func StartWebServer() error {
 	http.HandleFunc("/", viewIndexHandler)
 	http.HandleFunc("/controller/", viewControllerHandler)
 	http.HandleFunc("/api/command/", apiMakeHandler(apiCommandHandler))
+	http.Handle("/video/streaming/", appContext.DroneManager.Stream)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	return http.ListenAndServe(
