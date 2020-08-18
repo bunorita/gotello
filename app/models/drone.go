@@ -1,10 +1,12 @@
 package models
 
 import (
+	"context"
 	"fmt"
 	"image"
 	"image/color"
 	"io"
+	"io/ioutil"
 	"log"
 	"math"
 	"os/exec"
@@ -27,6 +29,7 @@ const (
 	frameArea         = frameX * frameY
 	frameSize         = frameArea * 3
 	faceDetectXMLFile = "./app/models/haarcascade_frontalface_default.xml"
+	snapshotDir       = "./static/img/snapshots/"
 )
 
 type DroneManager struct {
@@ -39,6 +42,7 @@ type DroneManager struct {
 	ffmpegOut            io.ReadCloser
 	Stream               *mjpeg.Stream
 	faceDetectTrackingOn bool
+	isSnapshot           bool
 }
 
 func NewDroneManager() *DroneManager {
@@ -233,12 +237,34 @@ func (d *DroneManager) StreamVideo() {
 			}
 
 			jpegBuf, err := gocv.IMEncode(gocv.JPEGFileExt, img)
+
+			// save image as snapshot
+			if d.isSnapshot {
+				backupFileName := snapshotDir + time.Now().Format(time.RFC3339) + ".jpg"
+				ioutil.WriteFile(backupFileName, jpegBuf, 0644)
+				snapshotFileName := snapshotDir + "snapshot.jpg"
+				ioutil.WriteFile(snapshotFileName, jpegBuf, 0644)
+				d.isSnapshot = false
+			}
+
 			if err != nil {
 				log.Println(err)
 			}
 			d.Stream.UpdateJPEG(jpegBuf)
 		}
 	}(d)
+}
+
+func (d *DroneManager) TakeSnapshot() {
+	d.isSnapshot = true
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	for {
+		if !d.isSnapshot || ctx.Err() != nil {
+			break
+		}
+	}
+	d.isSnapshot = false
 }
 
 func (d *DroneManager) EnableFaceDetectTracking() {

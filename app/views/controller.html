@@ -26,6 +26,14 @@
             sendCommand('speed', params);
         });
     });
+
+    function snapShot() {
+        $.post('/api/command/', { command: 'snapshot' })
+            .done(function (json) {
+                $('#div-snapshot').show();
+                $('#snapshot').attr('src', $('#snapshot').attr('src') + '?' + Math.random());
+            })
+    }
 </script>
 
 <div class="controller-box">
@@ -118,6 +126,17 @@
     </div>
     <br>
     <img src="/video/streaming" alt="">
+</div>
+
+<div class="controller-box">
+    <h3>Snapshot</h3>
+    <div data-role="controlgroup" data-type="horizontal">
+        <a href="#" data-role="button" onclick="snapShot(); return false">Snapshot</a>
+    </div>
+    <br>
+    <div id="div-snapshot" style="display: none;">
+        <img id="snapshot" src="/static/img/snapshots/snapshot.jpg">
+    </div>
 </div>
 
 {{ end }}
