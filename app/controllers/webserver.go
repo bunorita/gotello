@@ -134,6 +134,10 @@ func apiCommandHandler(w http.ResponseWriter, r *http.Request) {
 		drone.StartPatrol()
 	case "stopPatrol":
 		drone.StopPatrol()
+	case "faceDetectTrack":
+		drone.EnableFaceDetectTracking()
+	case "stopFaceDetectTrack":
+		drone.DisableFaceDetectTracking()
 	default:
 		APIResponse(w, "Not found", http.StatusNotFound)
 		return

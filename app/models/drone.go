@@ -2,6 +2,8 @@ package models
 
 import (
 	"fmt"
+	"image"
+	"image/color"
 	"io"
 	"log"
 	"os/exec"
@@ -23,17 +25,19 @@ const (
 	frameCenterY      = frameY / 2
 	frameArea         = frameX * frameY
 	frameSize         = frameArea * 3
+	faceDetectXMLFile = "./app/models/haarcascade_frontalface_default.xml"
 )
 
 type DroneManager struct {
 	*tello.Driver
-	Speed        int
-	patrolSem    *semaphore.Weighted
-	patrolQuit   chan bool
-	isPatrolling bool
-	ffmpegIn     io.WriteCloser
-	ffmpegOut    io.ReadCloser
-	Stream       *mjpeg.Stream
+	Speed                int
+	patrolSem            *semaphore.Weighted
+	patrolQuit           chan bool
+	isPatrolling         bool
+	ffmpegIn             io.WriteCloser
+	ffmpegOut            io.ReadCloser
+	Stream               *mjpeg.Stream
+	faceDetectTrackingOn bool
 }
 
 func NewDroneManager() *DroneManager {
@@ -152,6 +156,14 @@ func (d *DroneManager) StopPatrol() {
 
 func (d *DroneManager) StreamVideo() {
 	go func(d *DroneManager) {
+		classifier := gocv.NewCascadeClassifier()
+		defer classifier.Close()
+		if !classifier.Load(faceDetectXMLFile) {
+			log.Printf("Failed to load cascade file: %s\n", faceDetectXMLFile)
+			return
+		}
+		blue := color.RGBA{0, 0, 255, 0}
+
 		for {
 			buf := make([]byte, frameSize)
 			if _, err := io.ReadFull(d.ffmpegOut, buf); err != nil {
@@ -164,6 +176,19 @@ func (d *DroneManager) StreamVideo() {
 			if img.Empty() {
 				continue
 			}
+
+			if d.faceDetectTrackingOn {
+				d.StopPatrol()
+				rects := classifier.DetectMultiScale(img)
+				log.Printf("found %d faces\n", len(rects))
+				for _, r := range rects {
+					gocv.Rectangle(&img, r, blue, 3)
+					pt := image.Pt(r.Max.X, r.Min.Y-5)
+					gocv.PutText(&img, "Human", pt, gocv.FontHersheyPlain, 1.2, blue, 2)
+					break
+				}
+			}
+
 			jpegBuf, err := gocv.IMEncode(gocv.JPEGFileExt, img)
 			if err != nil {
 				log.Println(err)
@@ -171,4 +196,13 @@ func (d *DroneManager) StreamVideo() {
 			d.Stream.UpdateJPEG(jpegBuf)
 		}
 	}(d)
+}
+
+func (d *DroneManager) EnableFaceDetectTracking() {
+	d.faceDetectTrackingOn = true
+}
+
+func (d *DroneManager) DisableFaceDetectTracking() {
+	d.faceDetectTrackingOn = false
+	d.Hover()
 }
